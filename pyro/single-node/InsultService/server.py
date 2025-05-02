@@ -38,7 +38,7 @@ class InsultService:
         return list(self.r.smembers("insults"))
 
 def main():
-    daemon = Pyro4.Daemon(port=4718)
+    daemon = Pyro4.Daemon()
     ns = Pyro4.locateNS()
     obj = InsultService()
     uri = daemon.register(obj, objectId="InsultService")
