@@ -13,7 +13,7 @@ def main():
 
     def get_random_insult():
         insult = random.choice(insults)
-        print("Insulto:", insult)
+        print("Insulto ha añadir:", insult)
         return insult
     
     print("Connecting to the InsultService...")

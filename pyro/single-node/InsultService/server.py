@@ -23,6 +23,7 @@ class InsultService:
 
         resultados = []
         for insult in insult_or_list:
+            insult = insult.lower()
             if not self.r.sismember("insults", insult):
                 self.r.sadd("insults", insult)
                 logging.info(f"Insulto añadido: {insult}")

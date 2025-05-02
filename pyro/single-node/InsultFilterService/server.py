@@ -32,9 +32,10 @@ class InsultFilterService:
 
         resultados = []
         for text in input_texts:
+            text = text.lower()
             filtered = self.filter_text(text)
             if not self.r.sismember("filtered_texts", filtered):
-                timestamp = datetime.utcnow().isoformat()
+                timestamp = datetime.now(datetime.timezone.utc).isoformat()
                 next_id = self.r.incr("filtered_texts_id")
                 self.r.hset("filtered_texts", next_id, f"{filtered}|{timestamp}")
                 logging.info(f"Texto filtrado añadido: {filtered}")
