@@ -1,5 +1,15 @@
 import Pyro4
 import redis
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("insult_service.log", mode="a"),
+        logging.StreamHandler()
+    ]
+)
 
 @Pyro4.behavior(instance_mode="single")
 class InsultService:
@@ -7,12 +17,20 @@ class InsultService:
         self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
     @Pyro4.expose
-    def add_insult(self, insult):
-        if not self.r.sismember("insults", insult):
-            self.r.sadd("insults", insult)
-            return "Insulto registrado: " + insult
-        else:
-            return "Insulto ya registrado"
+    def add_insult(self, insult_or_list):
+        if isinstance(insult_or_list, str):
+            insult_or_list = [insult_or_list]
+
+        resultados = []
+        for insult in insult_or_list:
+            if not self.r.sismember("insults", insult):
+                self.r.sadd("insults", insult)
+                logging.info(f"Insulto añadido: {insult}")
+                resultados.append(f"Insulto registrado: {insult}")
+            else:
+                logging.info(f"Insulto ya registrado: {insult}")
+                resultados.append(f"Insulto ya registrado: {insult}")
+        return resultados
 
     @Pyro4.expose
     def get_insults(self):
@@ -24,7 +42,7 @@ def main():
     obj = InsultService()
     uri = daemon.register(obj, objectId="InsultService")
     ns.register("InsultService", uri)
-    print(f"InsultService with URI {uri} in execution...")
+    logging.info(f"InsultService registrado en {uri}")
     daemon.requestLoop()
 
 if __name__ == "__main__":
