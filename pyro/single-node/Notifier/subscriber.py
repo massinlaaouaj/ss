@@ -1,28 +1,26 @@
-from Pyro4 import Daemon, Proxy, expose, locateNS
+import Pyro4
 from observer import Observer
 
 class Subscriber(Observer):
-    @expose
+    @Pyro4.expose
     def update(self, insult):   
         print("Event: ", insult)
 
 def main():
-    with Daemon() as daemon:
-        # Crear y registrar el callback
-        subscriber = Subscriber()
-        subscriber_uri = daemon.register(subscriber)
+    ns = Pyro4.locateNS()
+    daemon = Pyro4.Daemon()
+    notifier_server_uri = ns.lookup("Notifier")
+    print("Conectando al Notifier...")
+    notifier_server = Pyro4.Proxy(notifier_server_uri)
+    print("Conectado al Notifier.\n")
 
-        # Conectarse al servidor (usa el URI que imprime tu servidor)
-        server = Proxy("PYRO:InsultService@localhost:4718")
+    subscriber = Subscriber()
+    subscriber_uri = daemon.register(subscriber)
 
-        # Añadir insulto
-        result = server.add_insult("asshole")
-        print("Resultado al añadir insulto:", result)
+    notifier_server.subscribe(subscriber_uri)
+    print("Suscrito al Notifier. Esperando eventos...\n\n")
 
-        # Suscribirse al broadcasting
-        server.subscribe(subscriber_uri)
-
-        daemon.requestLoop()
+    daemon.requestLoop()
 
 if __name__ == "__main__":
     main()
