@@ -4,13 +4,16 @@ import time
 N = 1000
 
 def main():
+    ns = Pyro4.locateNS()
+    insult_service_server_uri = ns.lookup("InsultService")
+    insult_service_server = Pyro4.Proxy(insult_service_server_uri)
+
     print(f" Enviando {N} insultos al servicio InsultService (Pyro4)...")
-    proxy = Pyro4.Proxy("PYRONAME:InsultService")
 
     start = time.time()
     for i in range(N):
         insult = f"insulto_{i}"
-        proxy.add_insult(insult)
+        insult_service_server.add_insult(insult)
     end = time.time()
 
     total_time = end - start

@@ -4,13 +4,16 @@ import time
 N = 1000  # número de textos a filtrar
 
 def main():
+    ns = Pyro4.locateNS()
+    insult_filter_service_server_uri = ns.lookup("InsultService")
+    insult_filter_server = Pyro4.Proxy(insult_filter_service_server_uri)
+
     print(f" Enviando {N} textos al servicio InsultFilterService (Pyro4)...")
-    proxy = Pyro4.Proxy("PYRONAME:InsultFilterService")
 
     start = time.time()
     for i in range(N):
         texto = f"este texto contiene insulto_{i}"
-        proxy.add_text(texto)
+        insult_filter_server.add_text(texto)
     end = time.time()
 
     total_time = end - start
