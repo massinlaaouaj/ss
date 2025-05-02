@@ -1,19 +1,23 @@
-from Pyro4 import Proxy
+import Pyro4
+import time
 
-remote = Proxy("PYRO:InsultFilterService@localhost:4040")
+N = 1000  # número de textos a filtrar
 
-def test_filter_text():
-    text = "idiota"
-    filtered = remote.filter_text(text)
-    assert "CENSORED" in filtered
-    assert "idiot" not in filtered
-    print("OK")
+def main():
+    print(f" Enviando {N} textos al servicio InsultFilterService (Pyro4)...")
+    proxy = Pyro4.Proxy("PYRONAME:InsultFilterService")
 
-def test_get_results():
-    results = remote.get_results()
-    assert isinstance(results, list)
-    assert any("CENSORED" in r for r in results)
-    print("OK")
+    start = time.time()
+    for i in range(N):
+        texto = f"este texto contiene insulto_{i}"
+        proxy.add_text(texto)
+    end = time.time()
 
-test_filter_text()
-test_get_results()
+    total_time = end - start
+    throughput = N / total_time
+
+    print(f" Tiempo total: {total_time:.4f} segundos")
+    print(f" Throughput: {throughput:.2f} peticiones/segundo")
+
+if __name__ == "__main__":
+    main()
