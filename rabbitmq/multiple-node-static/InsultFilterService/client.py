@@ -2,7 +2,10 @@ import pika
 import json
 
 def publish_texts(text_list):
-    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    credentials = pika.PlainCredentials("guest", "rabbitmq_Fall_")
+    parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+    connection = pika.BlockingConnection(parameters)
+
     channel = connection.channel()
 
     channel.queue_declare(queue="text_queue", durable=True)

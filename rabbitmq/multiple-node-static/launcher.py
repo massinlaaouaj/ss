@@ -47,8 +47,8 @@ def main():
         processes.append(launch("Subscriber", f"python3 {BASE_DIR}/Notifier/subscriber.py"))
 
         # 6. RabbitMQ clients (to send messages)
-        processes.append(launch("Client RabbitMQ - Insults", f"python3 {BASE_DIR}/client_insult_rabbitmq.py"))
-        processes.append(launch("Client RabbitMQ - Texts", f"python3 {BASE_DIR}/client_text_rabbitmq.py"))
+        processes.append(launch("Client RabbitMQ - Insults", f"python3 {BASE_DIR}/InsultService/client.py"))
+        processes.append(launch("Client RabbitMQ - Texts", f"python3 {BASE_DIR}/InsultFilterService/client.py"))
 
         print("✅ All services are running.")
         print("🛑 Press Ctrl+C to stop everything.")
