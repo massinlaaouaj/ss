@@ -61,7 +61,7 @@ class InsultFilterService:
         return [{ "id": k, "text": v.split("|")[0], "timestamp": v.split("|")[1] } for k, v in raw.items()]
 
 def main():
-    port = int(sys.argv[1])
+    port = int(sys.argv[1]) # >= 50152
     name = sys.argv[2] # #InsultFilterService_{i}
 
     daemon = Pyro4.Daemon(port=port)

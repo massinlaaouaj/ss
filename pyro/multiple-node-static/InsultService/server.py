@@ -39,7 +39,7 @@ class InsultService:
         return list(self.r.smembers("insults"))
 
 def main():
-    port = int(sys.argv[1])
+    port = int(sys.argv[1]) # >= 49152
     name = sys.argv[2] #InsultService_{i}
 
     daemon = Pyro4.Daemon(port=port)
