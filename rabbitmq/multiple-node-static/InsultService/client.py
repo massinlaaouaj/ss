@@ -2,7 +2,7 @@ import pika
 import json
 
 def publish_insults(insult_list):
-    credentials = pika.PlainCredentials("guest", "rabbitmq_Fall_")
+    credentials = pika.PlainCredentials("ar", "sar")
     parameters = pika.ConnectionParameters("localhost", credentials=credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
