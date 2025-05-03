@@ -1,6 +1,7 @@
 import subprocess
 import time
 import os
+import redis
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -56,9 +57,27 @@ def main():
             time.sleep(1)
 
     except KeyboardInterrupt:
-        print("🧹 Deteniendo process...")
+        print("🧹 Deteniendo procesos...")
         for p in processes:
             p.terminate()
+
+        print("🧹 Limpiando Redis...")
+        try:
+            r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
+            insults_count = r.scard("insults")
+            texts_count = r.hlen("filtered_texts")
+            text_id = r.get("filtered_texts_id")
+
+            r.delete("insults", "filtered_texts", "filtered_texts_id")
+
+            print(f"🗑️ insults: {insults_count} elementos eliminados.")
+            print(f"🗑️ filtered_texts: {texts_count} textos eliminados.")
+            print(f"🗑️ filtered_texts_id: {text_id} contador eliminado.")
+
+        except Exception as e:
+            print(f"⚠️ Error al borrar claves en Redis: {e}")
+
         print("👋 Listo.")
 
 if __name__ == "__main__":

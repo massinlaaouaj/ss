@@ -6,6 +6,3 @@ class ClientInsult:
         for i in range(N):
             insulto = f"insulto_{i}"
             self.balancer.send(insulto)
-
-clientInsult = ClientInsult()
-clientInsult.send_insult(1000)
