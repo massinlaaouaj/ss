@@ -2,6 +2,7 @@ import Pyro4
 import time
 
 N = 1000
+LOGFILE = f"resultados_insultservice_{N}_pyro.txt"
 
 def main():
     ns = Pyro4.locateNS()
@@ -19,8 +20,16 @@ def main():
     total_time = end - start
     throughput = N / total_time
 
-    print(f" Tiempo total: {total_time:.4f} segundos")
-    print(f" Throughput: {throughput:.2f} peticiones/segundo")
+    output = (
+        f"TEST: InsultService (Pyro4)\n"
+        f"Total requests: {N}\n"
+        f"Tiempo total: {total_time:.4f} segundos\n"
+        f"Throughput: {throughput:.2f} peticiones/segundo\n"
+    )
+
+    print(output)
+    with open(LOGFILE, "w") as f:
+        f.write(output)
 
 if __name__ == "__main__":
     main()
