@@ -54,7 +54,10 @@ class InsultService:
                 logging.error(f"❌ Error processing message: {e}")
 
         def run():
-            connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+            credentials = pika.PlainCredentials("ar", "sar")
+            parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+            connection = pika.BlockingConnection(parameters)
+
             channel = connection.channel()
             channel.queue_declare(queue="insult_queue", durable=True)
             channel.basic_qos(prefetch_count=1)
