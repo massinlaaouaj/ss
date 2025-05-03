@@ -1,8 +1,8 @@
-class ClienteFilter:
-    def __init__(self, balanceador):
-        self.balanceador = balanceador
+class ClientFilter:
+    def __init__(self, balancer):
+        self.balancer = balancer
 
-    def enviar_textos(self, N):
+    def send_text(self, N):
         for i in range(N):
-            texto = f"este texto contiene insulto_{i}"
-            self.balanceador.enviar(texto)
+            text = f"Este texto contiene insulto_{i}"
+            self.balancer.send(text)

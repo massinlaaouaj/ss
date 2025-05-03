@@ -1,8 +1,11 @@
-class ClienteInsult:
-    def __init__(self, balanceador):
-        self.balanceador = balanceador
+class ClientInsult:
+    def __init__(self, balancer):
+        self.balancer = balancer
 
-    def enviar_insultos(self, N):
+    def send_insult(self, N):
         for i in range(N):
             insulto = f"insulto_{i}"
-            self.balanceador.enviar(insulto)
+            self.balancer.send(insulto)
+
+clientInsult = ClientInsult()
+clientInsult.send_insult(1000)

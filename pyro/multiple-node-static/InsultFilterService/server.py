@@ -62,7 +62,7 @@ class InsultFilterService:
 
 def main():
     port = int(sys.argv[1])
-    name = sys.argv[2]
+    name = sys.argv[2] # #InsultFilterService_{i}
 
     daemon = Pyro4.Daemon(port=port)
     ns = Pyro4.locateNS()
