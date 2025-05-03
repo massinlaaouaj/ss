@@ -1,11 +1,12 @@
 import Pyro4
 import redis
-import logging
 import sys
-from datetime import datetime, timezone
-import threading
-import pika
+import logging
 import json
+import pika
+from multiprocessing import Process
+from datetime import datetime, timezone
+import traceback
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +21,6 @@ logging.basicConfig(
 class InsultFilterService:
     def __init__(self):
         self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
-        self.subscribers = []
 
     def get_insults_list(self):
         return self.r.smembers("insults")
@@ -53,41 +53,55 @@ class InsultFilterService:
                 logging.info(f"Filtered text added: {filtered}")
                 results.append(f"Text registered: {filtered} (UTC: {timestamp})")
             else:
-                logging.info(f"Text already registered: {filtered}")
+                logging.info(f"Filtered text already exists: {filtered}")
                 results.append(f"Text already registered: {filtered}")
         return results
 
     @Pyro4.expose
     def get_texts(self):
         raw = self.r.hgetall("filtered_texts")
-        return [{ "id": k, "text": v.split("|")[0], "timestamp": v.split("|")[1] } for k, v in raw.items()]
+        return [
+            {"id": k, "text": v.split("|")[0], "timestamp": v.split("|")[1]}
+            for k, v in raw.items()
+        ]
 
     def start_rabbitmq_consumer(self):
-        def callback(ch, method, properties, body):
-            try:
-                data = json.loads(body)
-                text = data.get("text")
-                if text:
-                    self.add_text(text)
-                    ch.basic_ack(delivery_tag=method.delivery_tag)
-                    logging.info(f"✅ Text consumed from queue: {text}")
-            except Exception as e:
-                logging.error(f"❌ Error processing message: {e}")
-
         def run():
-            credentials = pika.PlainCredentials("ar", "sar")
-            parameters = pika.ConnectionParameters("localhost", credentials=credentials)
-            connection = pika.BlockingConnection(parameters)
-            
-            channel = connection.channel()
-            channel.queue_declare(queue="text_queue", durable=True)
-            channel.basic_qos(prefetch_count=1)
-            channel.basic_consume(queue="text_queue", on_message_callback=callback)
-            logging.info("🎧 Listening on RabbitMQ queue: text_queue")
-            channel.start_consuming()
+            print("[Consumer] Process started for text_queue")
+            try:
+                credentials = pika.PlainCredentials("ar", "sar")
+                parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+                print("Connecting to RabbitMQ...")
+                connection = pika.BlockingConnection(parameters)
+                print("Connection established.")
 
-        threading.Thread(target=run, daemon=True).start()
+                channel = connection.channel()
+                channel.queue_declare(queue="text_queue", durable=True)
+                print("Queue declared: text_queue")
 
+                def callback(ch, method, properties, body):
+                    print(f"Message received: {body}")
+                    try:
+                        data = json.loads(body)
+                        text = data.get("text")
+                        if text:
+                            self.add_text(text)
+                            ch.basic_ack(delivery_tag=method.delivery_tag)
+                            print(f"Text processed: {text}")
+                    except Exception:
+                        print("Error in callback:")
+                        traceback.print_exc()
+
+                channel.basic_qos(prefetch_count=1)
+                channel.basic_consume(queue="text_queue", on_message_callback=callback)
+                print("[READY] Waiting for messages on text_queue...")
+                channel.start_consuming()
+
+            except Exception:
+                print("[Fatal] Error in RabbitMQ consumer process:")
+                traceback.print_exc()
+
+        Process(target=run, daemon=True).start()
 
 def main():
     port = int(sys.argv[1])  # >= 50152
@@ -102,3 +116,6 @@ def main():
     ns.register(name, uri)
     logging.info(f"{name} registered at {uri}")
     daemon.requestLoop()
+
+if __name__ == "__main__":
+    main()
