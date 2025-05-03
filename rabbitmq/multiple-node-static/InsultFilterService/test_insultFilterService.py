@@ -5,7 +5,9 @@ import json
 N = 1000
 
 def main():
-    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    credentials = pika.PlainCredentials("ar", "sar")
+    parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+    connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     channel.queue_declare(queue="text_queue", durable=True)
 
