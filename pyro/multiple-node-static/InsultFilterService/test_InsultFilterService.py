@@ -8,7 +8,7 @@ def main():
     balancer = RoundRobinBalancerFilter("InsultFilterService_")
     client = ClientFilter(balancer)
 
-    print(f"🔁 Enviando {N} textos a través del balanceador RoundRobin...")
+    print(f" ENVIANDO {N} textos a través del balanceador RoundRobin...")
     start = time.time()
     client.send_text(N)
     end = time.time()

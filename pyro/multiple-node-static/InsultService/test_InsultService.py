@@ -8,7 +8,7 @@ def main():
     balancer = RoundRobinBalancerInsult("InsultService_")
     client = ClientInsult(balancer)
 
-    print(f"🔁 Enviando {N} insultos a través del balanceador RoundRobin...")
+    print(f" ENVIANDO {N} insultos a través del balanceador RoundRobin...")
     start = time.time()
     client.send_insult(N)
     end = time.time()

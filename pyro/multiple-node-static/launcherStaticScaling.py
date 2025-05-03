@@ -51,17 +51,17 @@ def main():
         # 7. Test InsultFilterService
         processes.append(launch("Test InsultFilterService", f"python3 {BASE_DIR}/InsultFilterService/test_InsultFilterService.py"))
 
-        print("✅ Todas las instancias están en ejecución.")
-        print("🛑 Ctrl+C para detener todo.")
+        print("OK Todas las instancias están en ejecución.")
+        print("STOP Ctrl+C para detener todo.")
         while True:
             time.sleep(1)
 
     except KeyboardInterrupt:
-        print("🧹 Deteniendo procesos...")
+        print(" Deteniendo procesos...")
         for p in processes:
             p.terminate()
 
-        print("🧹 Limpiando Redis...")
+        print(" Limpiando Redis...")
         try:
             r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
@@ -71,14 +71,14 @@ def main():
 
             r.delete("insults", "filtered_texts", "filtered_texts_id")
 
-            print(f"🗑️ insults: {insults_count} elementos eliminados.")
-            print(f"🗑️ filtered_texts: {texts_count} textos eliminados.")
-            print(f"🗑️ filtered_texts_id: {text_id} contador eliminado.")
+            print(f" ELIMINAR insults: {insults_count} elementos eliminados.")
+            print(f" ELIMINAR filtered_texts: {texts_count} textos eliminados.")
+            print(f" ELIMINAR filtered_texts_id: {text_id} contador eliminado.")
 
         except Exception as e:
-            print(f"⚠️ Error al borrar claves en Redis: {e}")
+            print(f" ERROR al borrar claves en Redis: {e}")
 
-        print("👋 Listo.")
+        print(" COMPLETADO.")
 
 if __name__ == "__main__":
     main()
