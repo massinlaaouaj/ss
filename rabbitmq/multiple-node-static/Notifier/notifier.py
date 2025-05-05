@@ -4,6 +4,7 @@ import time
 import random
 import logging
 from multiprocessing import Process, Manager
+from Config import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,7 +14,7 @@ logging.basicConfig(
 @Pyro4.behavior(instance_mode="single")
 class Notifier:
     def __init__(self, subscribers):
-        self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        self.r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
         self.subscribers = subscribers  # ← lista compartida
 
     @Pyro4.expose
@@ -31,7 +32,7 @@ class Notifier:
             logging.info(f" Suscriptor eliminado: {subscriber_uri}")
 
 def broadcast_loop(subscribers):
-    r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
     while True:
         insults = list(r.smembers("insults"))
         if not insults:
@@ -54,10 +55,10 @@ def main():
         subscribers = manager.list()
 
         obj = Notifier(subscribers)
-        daemon = Pyro4.Daemon(port=4719)
+        daemon = Pyro4.Daemon(port=config.NOTIFIER_PORT)
         ns = Pyro4.locateNS()
-        uri = daemon.register(obj, objectId="Notifier")
-        ns.register("Notifier", uri)
+        uri = daemon.register(obj, objectId=config.NOTIFIER_NAME)
+        ns.register(config.NOTIFIER_NAME, uri)
         logging.info(f"Notifier registrado en {uri}")
 
         p = Process(target=broadcast_loop, args=(subscribers,), daemon=True)

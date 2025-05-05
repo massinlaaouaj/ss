@@ -1,12 +1,13 @@
 import time
 import pika
 import json
+from Config import config
 
 N = 1000
 
 def main():
-    credentials = pika.PlainCredentials("ar", "sar")
-    parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+    credentials = pika.PlainCredentials(config.USERNAME, config.PASSWORD)
+    parameters = pika.ConnectionParameters(config.RABBITMQ_HOST, credentials=credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     channel.queue_declare(queue="insult_queue", durable=True)
@@ -19,7 +20,7 @@ def main():
         message = json.dumps({"insult": insult})
         channel.basic_publish(
             exchange='',
-            routing_key='insult_queue',
+            routing_key=config.INSULTSERVICE_QUEUE_NAME,
             body=message,
             properties=pika.BasicProperties(delivery_mode=2)
         )

@@ -1,5 +1,6 @@
 import Pyro4
 from observer import Observer
+from Config import config
 
 class Subscriber(Observer):
     @Pyro4.expose
@@ -9,7 +10,7 @@ class Subscriber(Observer):
 def main():
     ns = Pyro4.locateNS()
     daemon = Pyro4.Daemon()
-    notifier_server_uri = ns.lookup("Notifier")
+    notifier_server_uri = ns.lookup(config.NOTIFIER_NAME)
     print("Conectando al Notifier...")
     notifier_server = Pyro4.Proxy(notifier_server_uri)
     print("Conectado al Notifier.\n")

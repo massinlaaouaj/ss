@@ -2,6 +2,8 @@ import subprocess
 import time
 import os
 import redis
+import sys
+from Config import config
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -25,8 +27,8 @@ def main():
         # processes.append(launch("RabbitMQ", "rabbitmq-server"))
 
         # 3. Multiple InsultService instances
-        number_insult_services = 2
-        base_port_insult = 49152
+        number_insult_services = int(sys.argv[1])
+        base_port_insult = config.INSULTSERVICE_PORT_INIT
         for i in range(number_insult_services):
             port = base_port_insult + i
             name = f"InsultService_{i}"
@@ -34,8 +36,8 @@ def main():
             processes.append(launch(name, cmd))
 
         # 4. Multiple InsultFilterService instances
-        number_filter_services = 2
-        base_port_filter = 50152
+        number_filter_services = int(sys.argv[2])
+        base_port_filter = config.INSULTFILTERSERVICE_PORT_INIT
         for i in range(number_filter_services):
             port = base_port_filter + i
             name = f"InsultFilterService_{i}"
@@ -66,7 +68,7 @@ def main():
 
         print("🧹 Cleaning Redis keys...")
         try:
-            r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+            r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
             insults_count = r.scard("insults")
             texts_count = r.hlen("filtered_texts")
             text_id = r.get("filtered_texts_id")

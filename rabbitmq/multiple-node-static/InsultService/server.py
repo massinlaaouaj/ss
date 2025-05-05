@@ -5,6 +5,7 @@ import logging
 import json
 import pika
 from multiprocessing import Process
+from Config import config
 import traceback
 
 logging.basicConfig(
@@ -19,7 +20,7 @@ logging.basicConfig(
 @Pyro4.behavior(instance_mode="single")
 class InsultService:
     def __init__(self):
-        self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        self.r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
 
     @Pyro4.expose
     def add_insult(self, insult_or_list):
@@ -46,14 +47,14 @@ class InsultService:
         def run():
             print("[Consumer] Process started")
             try:
-                credentials = pika.PlainCredentials("ar", "sar")
-                parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+                credentials = pika.PlainCredentials(config.USERNAME, config.PASSWORD)
+                parameters = pika.ConnectionParameters(config.RABBITMQ_HOST, credentials=credentials)
                 print("Connecting to RabbitMQ...")
                 connection = pika.BlockingConnection(parameters)
                 print("Connection established.")
 
                 channel = connection.channel()
-                channel.queue_declare(queue="insult_queue", durable=True)
+                channel.queue_declare(queue=config.INSULTSERVICE_QUEUE_NAME, durable=True)
                 print("Queue declared: insult_queue")
 
                 def callback(ch, method, properties, body):
@@ -70,7 +71,7 @@ class InsultService:
                         traceback.print_exc()
 
                 channel.basic_qos(prefetch_count=1)
-                channel.basic_consume(queue="insult_queue", on_message_callback=callback)
+                channel.basic_consume(queue=config.INSULTSERVICE_QUEUE_NAME, on_message_callback=callback)
                 print("[READY] Waiting for messages...")
                 channel.start_consuming()
 

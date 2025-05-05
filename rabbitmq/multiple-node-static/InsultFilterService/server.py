@@ -4,9 +4,10 @@ import sys
 import logging
 import json
 import pika
+import traceback
 from multiprocessing import Process
 from datetime import datetime, timezone
-import traceback
+from Config import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +21,7 @@ logging.basicConfig(
 @Pyro4.behavior(instance_mode="single")
 class InsultFilterService:
     def __init__(self):
-        self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        self.r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
 
     def get_insults_list(self):
         return self.r.smembers("insults")
@@ -69,14 +70,14 @@ class InsultFilterService:
         def run():
             print("[Consumer] Process started for text_queue")
             try:
-                credentials = pika.PlainCredentials("ar", "sar")
-                parameters = pika.ConnectionParameters("localhost", credentials=credentials)
+                credentials = pika.PlainCredentials(config.USERNAME, config.PASSWORD)
+                parameters = pika.ConnectionParameters(config.RABBITMQ_HOST, credentials=credentials)
                 print("Connecting to RabbitMQ...")
                 connection = pika.BlockingConnection(parameters)
                 print("Connection established.")
 
                 channel = connection.channel()
-                channel.queue_declare(queue="text_queue", durable=True)
+                channel.queue_declare(queue=config.INSULTFILTERSERVICE_QUEUE_NAME, durable=True)
                 print("Queue declared: text_queue")
 
                 def callback(ch, method, properties, body):
@@ -93,7 +94,7 @@ class InsultFilterService:
                         traceback.print_exc()
 
                 channel.basic_qos(prefetch_count=1)
-                channel.basic_consume(queue="text_queue", on_message_callback=callback)
+                channel.basic_consume(queue=config.INSULTFILTERSERVICE_QUEUE_NAME, on_message_callback=callback)
                 print("[READY] Waiting for messages on text_queue...")
                 channel.start_consuming()
 
