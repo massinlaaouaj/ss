@@ -2,6 +2,7 @@ import subprocess
 import time
 import os
 import redis
+import sys
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
