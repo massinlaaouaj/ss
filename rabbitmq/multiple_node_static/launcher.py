@@ -3,7 +3,7 @@ import time
 import os
 import redis
 import sys
-from Config import config
+from Config.config import config
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
