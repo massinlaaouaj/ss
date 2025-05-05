@@ -65,6 +65,9 @@ def main():
         for p in processes:
             p.terminate()
 
+        print("🧹 Killing NameServer...")
+        subprocess.call("pkill -f pyro4-ns", shell=True)
+
         print("🧹 Cleaning Redis keys...")
         try:
             r = redis.Redis(host='localhost', port=6379, decode_responses=True)
