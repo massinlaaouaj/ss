@@ -7,7 +7,7 @@ import pika
 import traceback
 from multiprocessing import Process
 from datetime import datetime, timezone
-from config.config import config
+from Config.config import config
 
 logging.basicConfig(
     level=logging.INFO,

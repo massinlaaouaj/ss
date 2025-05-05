@@ -1,6 +1,6 @@
 import pika
 import json
-from config.config import config
+from Config.config import config
 
 def publish_texts(text_list):
     credentials = pika.PlainCredentials(config.USERNAME, config.PASSWORD)

@@ -1,7 +1,7 @@
 import time
 import pika
 import json
-from config.config import config
+from Config.config import config
 
 N = 1000
 
