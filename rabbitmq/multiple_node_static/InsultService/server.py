@@ -5,7 +5,7 @@ import logging
 import json
 import pika
 from multiprocessing import Process
-from Config.config import config
+from config.config import config
 import traceback
 
 logging.basicConfig(

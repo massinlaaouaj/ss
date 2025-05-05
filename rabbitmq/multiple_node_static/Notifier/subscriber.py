@@ -1,6 +1,6 @@
 import Pyro4
 from observer import Observer
-from Config.config import config
+from config.config import config
 
 class Subscriber(Observer):
     @Pyro4.expose

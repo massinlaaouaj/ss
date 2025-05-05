@@ -4,7 +4,7 @@ import time
 import random
 import logging
 from multiprocessing import Process, Manager
-from Config.config import config
+from config.config import config
 
 logging.basicConfig(
     level=logging.INFO,

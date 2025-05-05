@@ -1,7 +1,7 @@
 # 0
 import argparse
 from Pyro4.naming import startNSloop
-from Config.config import config
+from config.config import config
 
 def main():
     parser = argparse.ArgumentParser(description="Arranca un Pyro4 Name Server en host y puerto especificados")
