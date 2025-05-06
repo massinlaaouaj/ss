@@ -1,3 +1,5 @@
+#python3 launcher.py <number_insult_services> <number_filter_services> <number_insults> <number_texts_to_filter>
+
 import subprocess
 import time
 import os
@@ -52,8 +54,8 @@ def main():
         #processes.append(launch("Client RabbitMQ - Texts", f"python3 {BASE_DIR}/InsultFilterService/client.py"))
 
         # 7. Tests
-        processes.append(launch("Test RabbitMQ - Insults", f"python3 {BASE_DIR}/InsultService/test_insultService.py"))
-        processes.append(launch("Test RabbitMQ - Texts", f"python3 {BASE_DIR}/InsultFilterService/test_insultFilterService.py"))
+        processes.append(launch("Test RabbitMQ - Insults", f"python3 {BASE_DIR}/InsultService/test_insultService.py {int(sys.argv[3])}"))
+        processes.append(launch("Test RabbitMQ - Texts", f"python3 {BASE_DIR}/InsultFilterService/test_insultFilterService.py {int(sys.argv[4])}"))
 
         print("✅ All services are running.")
         print("🛑 Press Ctrl+C to stop everything.")
