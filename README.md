@@ -23,7 +23,29 @@ Finally, the design and architecture of each solution must be documented, includ
 
 ## Project Overview
 
-bla bla bla
+This project implements a distributed insult management system using:
+
+- RabbitMQ as a messaging middleware
+- Redis as a fast in-memory database
+- PyRO for remote object communication between services
+- Plotly Dash for a real-time monitoring dashboard
+
+The system is designed to be scalable, modular, and resilient to failures. It supports:
+
+- Dynamic scaling of microservices based on message queue load
+- Asynchronous communication between clients and services
+- Real-time processing and filtering of text data
+- Broadcasting of random insults to subscribers
+- Visualization of system metrics in a live dashboard
+
+Clients send:
+
+- Insults → pushed to a queue and consumed by `InsultService` nodes
+
+- Texts → pushed to a separate queue and filtered by `InsultFilterService` nodes
+
+The system scales up/down `InsultService` and `InsultFilterService` instances based on RabbitMQ queue size.
+
 
 ### How to run:
 - [XML-RPC]()
