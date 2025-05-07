@@ -5,7 +5,7 @@ import sys
 def main():
     n_pis = int(sys.argv[1])
     logfile = f"resultados_insultservice_{n_pis}_pyro.txt"
-
+    
     ns = Pyro4.locateNS()
     insult_service_server_uri = ns.lookup("InsultService")
     insult_service_server = Pyro4.Proxy(insult_service_server_uri)
