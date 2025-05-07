@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #python3 launcher.py <number_insult_services> <number_filter_services> <number_insults> <number_texts_to_filter>
 
