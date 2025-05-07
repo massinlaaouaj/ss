@@ -25,6 +25,14 @@ Finally, the design and architecture of each solution must be documented, includ
 
 bla bla bla
 
+### How to run:
+- [XML-RPC]()
+- [PyRO](./pyro/README.md)
+- [Redis]()
+- [RabbitMQ](./rabbitmq/README.md)
+- [Dynamic-scaling](./dynamic-scaling/README.md)
+
+
 ### Folder Structure
 
 ````
