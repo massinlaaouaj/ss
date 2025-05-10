@@ -46,6 +46,7 @@ fi
 clear
 
 echo "> Instalando el contenedor Redis..."
+$SUDO pip3 install -r ../requirements.txt
 if ! $SUDO docker container inspect redis-container >/dev/null 2>&1; then
   $SUDO docker pull redis:latest
   $SUDO docker run -d --name redis-container -p 6379:6379 redis:latest
