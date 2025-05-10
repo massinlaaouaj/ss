@@ -46,7 +46,15 @@ fi
 clear
 
 echo "> Instalando el contenedor Redis..."
-$SUDO pip3 install -r ../requirements.txt --break-system-packages
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+REQ_FILE="$SCRIPT_DIR/../requirements.txt"
+if [ ! -f "$REQ_FILE" ]; then
+  echo "No se encontró $REQ_FILE"
+  exit 1
+fi
+
+$SUDO pip3 install -r "$SCRIPT_DIR/../requirements.txt" --break-system-packages
 if ! $SUDO docker container inspect redis-container >/dev/null 2>&1; then
   $SUDO docker pull redis:latest
   $SUDO docker run -d --name redis-container -p 6379:6379 redis:latest
