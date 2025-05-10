@@ -6,6 +6,7 @@ import os
 import redis
 import sys
 import Pyro4
+import signal
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -63,6 +64,8 @@ def main():
 
         print("✅ All services are running.")
         print("🛑 Press Ctrl+C to stop everything.")
+
+        #os.kill(os.getpid(), signal.SIGINT)
         
         while True:
             time.sleep(1)
