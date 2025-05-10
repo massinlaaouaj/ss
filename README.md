@@ -41,7 +41,6 @@ The system is designed to be scalable, modular, and resilient to failures. It su
 Clients send:
 
 - Insults → pushed to a queue and consumed by `InsultService` nodes
-
 - Texts → pushed to a separate queue and filtered by `InsultFilterService` nodes
 
 The system scales up/down `InsultService` and `InsultFilterService` instances based on RabbitMQ queue size.
