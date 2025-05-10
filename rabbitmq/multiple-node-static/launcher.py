@@ -5,6 +5,7 @@ import time
 import os
 import redis
 import sys
+import Pyro4
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -88,6 +89,16 @@ def main():
             print(f"🗑️ filtered_texts_id removed: {text_id}")
         except Exception as e:
             print(f"⚠️ Redis clean-up error: {e}")
+
+        print("👋 Trying to stop Notifier broadcasting...")
+        try:
+            ns = Pyro4.locateNS()
+            notifier_uri = ns.lookup("Notifier")
+            notifier = Pyro4.Proxy(notifier_uri)
+            notifier.stop_broadcast()
+            print("🚫 Notifier broadcasting process stopped.")
+        except Exception as e:
+            print(f"⚠️ Could not stop Notifier: {e}")
 
         print("👋 Done.")
 
