@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 if [ "$EUID" -ne 0 ]; then
   echo "Este script debe ejecutarse como root o con sudo."
   exit 1
