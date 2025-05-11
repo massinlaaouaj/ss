@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import redis
+import signal
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -39,14 +40,14 @@ def main():
 
         # 6. Test InsultService
         processes.append(launch("Test InsultService", f"python3 {BASE_DIR}/tests/test_InsultService.py {number_petitions_insult}"))
-
+        
         # 7. Test InsultFilterService
         processes.append(launch("Test InsultFilterService", f"python3 {BASE_DIR}/tests/test_InsultFilterService.py {number_petitions_text}"))
 
         print("\n Todos los procesos han sido lanzados.")
         print(" Pulsa Ctrl+C para detener manualmente.")
 
-        # Espera indefinida (los procesos siguen corriendo)
+        # os.kill(os.getpid(), signal.SIGINT)
         while True:
             time.sleep(1)
 
