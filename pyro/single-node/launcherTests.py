@@ -3,8 +3,9 @@ import time
 import os
 import sys
 import redis
-import signal
+import socket
 import Pyro4
+import signal
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -30,7 +31,7 @@ def is_nameserver_running():
         return True
     except Exception:
         return False
-
+    
 
 def main():
     processes = []
@@ -57,21 +58,15 @@ def main():
         # 3. InsultFilterService
         processes.append(launch("InsultFilterService", f"python3 {BASE_DIR}/InsultFilterService/server.py"))
 
-        # 4. Notifier
-        processes.append(launch("Notifier", f"python3 {BASE_DIR}/Notifier/notifier.py"))
-
-        # 5. Subscriber
-        processes.append(launch("Subscriber", f"python3 {BASE_DIR}/Notifier/subscriber.py"))
-
-        # 6. Test InsultService
+        # 4. Test InsultService
         processes.append(launch("Test InsultService", f"python3 {BASE_DIR}/tests/test_InsultService.py {number_petitions_insult}"))
         
-        # 7. Test InsultFilterService
+        # 5. Test InsultFilterService
         processes.append(launch("Test InsultFilterService", f"python3 {BASE_DIR}/tests/test_InsultFilterService.py {number_petitions_text}"))
 
         print("\n Todos los procesos han sido lanzados.")
         print(" Pulsa Ctrl+C para detener manualmente.")
-        #os.kill(os.getpid(), signal.SIGINT)
+        os.kill(os.getpid(), signal.SIGINT)
         while True:
             time.sleep(1)
 
@@ -83,19 +78,19 @@ def main():
             except Exception:
                 pass
 
-        print("🧹 Killing NameServer if launched by this script...")
+        # Kill NameServer if launched by this script
         if not is_nameserver_running():
+            print("🧹 Killing NameServer...")
             subprocess.call("pkill -f pyro4-ns", shell=True)
 
+        # Clean Redis if launched
         print("🧹 Limpiando Redis si lanzado por este script...")
         try:
             r = redis.Redis(host='localhost', port=6379, decode_responses=True)
             insults_count = r.scard("insults")
             texts_count = r.hlen("filtered_texts")
             text_id = r.get("filtered_texts_id")
-
             r.delete("insults", "filtered_texts", "filtered_texts_id")
-
             print(f" ELIMINAR insults: {insults_count} elementos eliminados.")
             print(f" ELIMINAR filtered_texts: {texts_count} textos eliminados.")
             print(f" ELIMINAR filtered_texts_id: {text_id} contador eliminado.")
