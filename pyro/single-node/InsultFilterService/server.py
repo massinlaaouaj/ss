@@ -35,23 +35,47 @@ class InsultFilterService:
         if isinstance(input_texts, str):
             input_texts = [input_texts]
 
-        resultados = []
-        for text in input_texts:
-            text = text.lower()
-            filtered = self.filter_text(text)
-            valores = self.r.hvals("filtered_texts")
-            ya_existente = any(filtered == v.split("|")[0] for v in valores)
+        # 1) Preprocesar y filtrar
+        filtered_list = [self.filter_text(txt.lower()) for txt in input_texts]
 
-            if not ya_existente:
-                timestamp = datetime.now(timezone.utc).isoformat()
-                next_id = self.r.incr("filtered_texts_id")
-                self.r.hset("filtered_texts", next_id, f"{filtered}|{timestamp}")
-                logging.info(f"Texto filtrado añadido: {filtered}")
-                resultados.append(f"Texto registrado: {filtered} (UTC: {timestamp})")
+        # 2) Pipeline fase 1: comprobamos membresía
+        pipe = self.r.pipeline()
+        for f in filtered_list:
+            pipe.sismember(self.texts_set, f)
+        exists = pipe.execute()  # lista de bool
+
+        resultados = []
+        nuevos = []  # recogemos (filtro, timestamp) de los nuevos
+
+        # 3) Construir respuesta y lista de inserción
+        for f, ex in zip(filtered_list, exists):
+            if not ex:
+                ts = datetime.now(timezone.utc).isoformat()
+                nuevos.append((f, ts))
+                resultados.append(None)  # placeholder
             else:
-                logging.info(f"Texto ya registrado: {filtered}")
-                resultados.append(f"Texto ya registrado: {filtered}")
+                resultados.append(f"Texto ya registrado: {f}")
+
+        # 4) Pipeline fase 2: añadimos solo los nuevos en lote
+        pipe2 = self.r.pipeline()
+        for f, ts in nuevos:
+            pipe2.incr("filtered_texts_id")
+            pipe2.hset("filtered_texts", "__ID__", f"{f}|{ts}")  # __ID__ será remplazado tras ejecutar
+            pipe2.sadd(self.texts_set, f)
+        resp2 = pipe2.execute()
+
+        # 5) Extraer IDs y rellenar mensajes
+        # resp2 = [id1,1,1, id2,1,1, ...]
+        ids = [resp2[i] for i in range(0, len(resp2), 3)]
+        j = 0
+        for idx, val in enumerate(resultados):
+            if val is None:
+                f, ts = nuevos[j]
+                resultados[idx] = f"Texto registrado: {f} (ID: {ids[j]}, UTC: {ts})"
+                j += 1
+
         return resultados
+
 
 
     @Pyro4.expose
