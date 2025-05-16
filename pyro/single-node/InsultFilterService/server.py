@@ -1,6 +1,7 @@
 import Pyro4
 import redis
 import logging
+import time
 from datetime import datetime, timezone
 
 logging.basicConfig(
@@ -17,9 +18,17 @@ class InsultFilterService:
     def __init__(self):
         self.r = redis.Redis(host='localhost', port=6379, decode_responses=True)
         self.subscribers = []
+        self.cached_insults = set()
+        self.last_cache_time = 0
+        self.cache_ttl = 10
 
     def get_insults_list(self):
-        return self.r.smembers("insults")
+        now = time.time()
+        if now - self.last_cache_time > self.cache_ttl:
+            self.cached_insults = self.r.smembers("insults")
+            self.last_cache_time = now
+        return self.cached_insults
+
 
     def filter_text(self, text):
         insults_set = self.get_insults_list()
@@ -35,46 +44,30 @@ class InsultFilterService:
         if isinstance(input_texts, str):
             input_texts = [input_texts]
 
-        # 1) Preprocesar y filtrar
-        filtered_list = [self.filter_text(txt.lower()) for txt in input_texts]
+        insults_set = self.get_insults_list()  # 🔁 Cache insult list
+        existing_texts = {v.split("|")[0] for v in self.r.hvals("filtered_texts")}  # ⚡ 1 llamada
 
-        # 2) Pipeline fase 1: comprobamos membresía
         pipe = self.r.pipeline()
-        for f in filtered_list:
-            pipe.sismember(self.texts_set, f)
-        exists = pipe.execute()  # lista de bool
-
         resultados = []
-        nuevos = []  # recogemos (filtro, timestamp) de los nuevos
 
-        # 3) Construir respuesta y lista de inserción
-        for f, ex in zip(filtered_list, exists):
-            if not ex:
-                ts = datetime.now(timezone.utc).isoformat()
-                nuevos.append((f, ts))
-                resultados.append(None)  # placeholder
+        for text in input_texts:
+            text = text.lower()
+            words = text.split()
+            filtered = " ".join("CENSORED" if word in insults_set else word for word in words)
+
+            if filtered not in existing_texts:
+                timestamp = datetime.now(timezone.utc).isoformat()
+                next_id = self.r.incr("filtered_texts_id")
+                pipe.hset("filtered_texts", next_id, f"{filtered}|{timestamp}")
+                resultados.append(f"Texto registrado: {filtered} (UTC: {timestamp})")
+                logging.info(f"Texto filtrado añadido: {filtered}")
             else:
-                resultados.append(f"Texto ya registrado: {f}")
+                resultados.append(f"Texto ya registrado: {filtered}")
+                logging.info(f"Texto ya registrado: {filtered}")
 
-        # 4) Pipeline fase 2: añadimos solo los nuevos en lote
-        pipe2 = self.r.pipeline()
-        for f, ts in nuevos:
-            pipe2.incr("filtered_texts_id")
-            pipe2.hset("filtered_texts", "__ID__", f"{f}|{ts}")  # __ID__ será remplazado tras ejecutar
-            pipe2.sadd(self.texts_set, f)
-        resp2 = pipe2.execute()
-
-        # 5) Extraer IDs y rellenar mensajes
-        # resp2 = [id1,1,1, id2,1,1, ...]
-        ids = [resp2[i] for i in range(0, len(resp2), 3)]
-        j = 0
-        for idx, val in enumerate(resultados):
-            if val is None:
-                f, ts = nuevos[j]
-                resultados[idx] = f"Texto registrado: {f} (ID: {ids[j]}, UTC: {ts})"
-                j += 1
-
+        pipe.execute()  # ⚡ Ejecutar todas las escrituras de golpe
         return resultados
+
 
 
 
