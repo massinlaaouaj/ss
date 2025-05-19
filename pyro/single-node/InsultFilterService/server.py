@@ -44,8 +44,8 @@ class InsultFilterService:
         if isinstance(input_texts, str):
             input_texts = [input_texts]
 
-        insults_set = self.get_insults_list()  # 🔁 Cache insult list
-        existing_texts = {v.split("|")[0] for v in self.r.hvals("filtered_texts")}  # ⚡ 1 llamada
+        insults_set = self.get_insults_list()
+        existing_texts = {v.split("|")[0] for v in self.r.hvals("filtered_texts")}
 
         pipe = self.r.pipeline()
         resultados = []
@@ -65,7 +65,7 @@ class InsultFilterService:
                 resultados.append(f"Texto ya registrado: {filtered}")
                 logging.info(f"Texto ya registrado: {filtered}")
 
-        pipe.execute()  # ⚡ Ejecutar todas las escrituras de golpe
+        pipe.execute()
         return resultados
 
 
